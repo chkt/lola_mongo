@@ -1,0 +1,8 @@
+#ide
+/.idea/
+/nbproject/
+
+#lib
+/composer.phar
+/composer.lock
+/vendor/
