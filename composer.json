@@ -1,0 +1,41 @@
+{
+	"name" : "chkt/lola_mongo",
+	"description" : "Mongo DB Resource for Lola MVC Framework",
+	"license" : "MIT",
+
+	"keywords" : [
+		"Framework",
+		"Mongo DB",
+		"Model",
+		"Resource"
+	],
+
+	"authors" : [{
+		"name" : "Christoph Kettelhoit",
+		"email" : "ck@chkt.one",
+		"homepage" : "https://chkt.one",
+		"role" : "Developer"
+	}],
+
+	"require" : {
+		"mongodb/mongodb" : "1.1.*",
+		"chkt/lola" : "0.6.0-alpha"
+	},
+
+	"autoload" : {
+		"psr-4" : {
+			"lola-mongo" : "source/"
+		}
+	},
+
+	"require-dev" : {
+		"phpunit/phpunit" : "5.6.*",
+		"php-mock/php-mock-phpunit" : "1.1.*"
+	},
+
+	"autoload-dev" : {
+		"psr-4" : {
+			"test//" : "test/"
+		}
+	}
+}
