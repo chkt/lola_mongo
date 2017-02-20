@@ -180,4 +180,40 @@ extends TestCase
 		$this->assertEquals([ '$set' => [ 'bar' => 'quux' ]], $updates);
 		$this->assertEquals('quux', $resource->getString('bar'));
 	}
+
+
+	public function testRemoveKey() {
+		$props = [
+			'foo' => 1,
+			'bar' => 2
+		];
+		$updates = [];
+
+		$collection = $this->_mockCollection($props, $updates);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($resource, $resource->removeKey('foo'));
+		$this->assertEquals([ '$unset' => [ 'foo' => null ]], $updates);
+		$this->assertEquals($resource, $resource->removeKey('bar'));
+		$this->assertEquals([ '$unset' => [ 'bar' => null ]], $updates);
+		$this->assertFalse($resource->hasKey('bar'));
+	}
+
+	public function testRenameKey() {
+		$props = [
+			'foo' => 1,
+			'bar' => 2
+		];
+		$updates = [];
+
+		$collection = $this->_mockCollection($props, $updates);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($resource, $resource->renameKey('foo', 'baz'));
+		$this->assertEquals([ '$rename' => [ 'foo' => 'baz' ]], $updates);
+		$this->assertEquals($resource, $resource->renameKey('bar', 'quux'));
+		$this->assertEquals([ '$rename' => [ 'bar' => 'quux' ]], $updates);
+		$this->assertFalse($resource->hasKey('bar'));
+		$this->assertTrue($resource->hasKey('quux'));
+	}
 }
