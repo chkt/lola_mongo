@@ -12,7 +12,7 @@ abstract class AMongoResourceMap
 implements IResourceMap
 {
 
-	static private function _getQueryOptions() {
+	static private function _getQueryOptions() : array {
 		return [
 			'typeMap' => [
 				'root' => 'array',
@@ -21,6 +21,7 @@ implements IResourceMap
 			]
 		];
 	}
+
 
 
 	private $_collection;
@@ -95,6 +96,27 @@ implements IResourceMap
 	public function setString(string $key, string $value) : IResourceMap {
 		$this->_data[$key] = $value;
 		$this->_collection->updateOne($this->_filter, [ '$set' => [ $key => $value ]]);
+
+		return $this;
+	}
+
+
+	public function removeKey(string $key) : IResourceMap {
+		if (!$this->hasKey($key)) throw new \ErrorException();
+
+		unset($this->_data[$key]);
+		$this->_collection->updateOne($this->_filter, [ '$unset' => [ $key => null ]]);
+
+		return $this;
+	}
+
+	public function renameKey(string $key, string $to) : IResourceMap {
+		if (!$this->hasKey($key) || $this->hasKey($to)) throw new \ErrorException();
+
+		$this->_data[$to] = $this->_data[$key];
+		unset($this->_data[$key]);
+
+		$this->_collection->updateOne($this->_filter, [ '$rename' => [ $key => $to ]]);
 
 		return $this;
 	}
