@@ -2,23 +2,22 @@
 
 namespace lola_mongo\model;
 
-use lola\model\IResourceCollection;
-use lola\model\AMongoResource;
+use lola\model\collection\IResourceCollection;
+use lola_mongo\model\AMongoResource;
 
 use MongoDB\Collection;
 use lola\type\StructuredData;
+use lola\model\IResource;
 use lola\model\IResourceQuery;
-use lola\model\AMongoResourceQuery;
+use lola\model\ProxyResourceDriver;
+use lola\model\ProxyResource;
+use lola_mongo\model\AMongoResourceQuery;
 
 
 
 abstract class AMongoResourceCollection
 implements IResourceCollection
 {
-
-	const VERSION = '0.2.4';
-
-
 
 	protected $_collection = null;
 	protected $_deserialize = null;
@@ -76,16 +75,16 @@ implements IResourceCollection
 	}
 
 
-	public function isLive() {
+	public function isLive() : bool {
 		return $this->_state === self::STATE_LIVE;
 	}
 
-	public function isDirty() {
+	public function isDirty() : bool {
 		return $this->_updateNum !== 0;
 	}
 
 
-	public function read(IResourceQuery $query, $limit, $offset = 0) {
+	public function read(IResourceQuery $query, int $limit, int $offset = 0) : IResourceCollection {
 		if (
 			!($query instanceof AMongoResourceQuery) ||
 			!is_int($limit) || $limit < 0 ||
@@ -121,7 +120,7 @@ implements IResourceCollection
 	}
 
 
-	public function update() {
+	public function update() : IResourceCollection {
 		if ($this->_life !== self::STATE_LIVE) throw new \ErrorException();
 
 		if ($this->_updateNum === 0) return $this;
@@ -148,14 +147,14 @@ implements IResourceCollection
 	}
 
 
-	public function getLength() {
+	public function getLength() : int {
 		if ($this->_life !== self::STATE_LIVE) throw new \ErrorException();
 
 		return $this->_length;
 	}
 
 
-	public function getIndexOf(IResourceQuery $query) {
+	public function getIndexOf(IResourceQuery $query) : int {
 		for ($i = $this->_length - 1; $i > -1; $i -= 1) {
 			$item = $this->useItem($i);
 			$data = $item->getData();
@@ -167,7 +166,7 @@ implements IResourceCollection
 	}
 
 
-	public function& useItem($index) {
+	public function& useItem(int $index) : IResource {
 		if (
 			!is_int($index) || $index < 0 ||
 			$this->_life !== self::STATE_LIVE
