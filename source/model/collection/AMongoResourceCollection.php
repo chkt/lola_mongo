@@ -1,6 +1,6 @@
 <?php
 
-namespace lola_mongo\model;
+namespace lola_mongo\model\collection;
 
 use lola\model\collection\IResourceCollection;
 use lola_mongo\model\AMongoResource;
