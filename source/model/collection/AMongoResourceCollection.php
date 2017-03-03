@@ -76,7 +76,7 @@ implements IResourceCollection
 
 
 	public function isLive() : bool {
-		return $this->_state === self::STATE_LIVE;
+		return $this->_life === self::STATE_LIVE;
 	}
 
 	public function isDirty() : bool {
