@@ -182,6 +182,186 @@ extends TestCase
 	}
 
 
+	public function testGetList() {
+		$list0 = ['bar', 'baz', 'bar'];
+		$list1 = ['bang', 'quux'];
+
+		$props = [
+			'foo' => $list0,
+			'bar' => $list1
+		];
+
+		$collection = $this->_mockCollection($props);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($list0, $resource->getList('foo'));
+		$this->assertEquals($list1, $resource->getList('bar'));
+	}
+
+	public function testSetList() {
+		$list0 = ['foo', 'bar', 'foo'];
+		$list1 = ['baz', 'quux', 'bang'];
+
+		$props = [
+			'foo' => ''
+		];
+		$updates = [];
+
+		$collection = $this->_mockCollection($props, $updates);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($resource, $resource->setList('foo', $list0));
+		$this->assertEquals(['$set' => ['foo' => $list0]], $updates);
+		$this->assertEquals($resource, $resource->setList('bar', $list1));
+		$this->assertEquals(['$set' => ['bar' => $list1]], $updates);
+		$this->assertEquals($list1, $resource->getList('bar'));
+	}
+
+	public function testSetList_invalid_string_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setList('foo', [ 'foo' => 'bar' ]);
+	}
+
+	public function testSetList_invalid_index_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setList('foo', [ 1 => 'bar', 0 => 'foo' ]);
+	}
+
+
+	public function testGetSet() {
+		$set0 = [ 'foo', 'bar', 'baz' ];
+		$set1 = [ 'bar', 'baz', 'quux' ];
+
+		$props = [
+			'foo' => $set0,
+			'bar' => $set1
+		];
+
+		$collection = $this->_mockCollection($props);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($set0, $resource->getMap('foo'));
+		$this->assertEquals($set1, $resource->getMap('bar'));
+	}
+
+	public function testSetSet() {
+		$set0 = [ 'foo', 'bar', 'baz' ];
+		$set1 = [ 'bar', 'baz', 'quux' ];
+
+		$props = [
+			'foo' => ''
+		];
+		$updates = [];
+
+		$collection = $this->_mockCollection($props, $updates);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($resource, $resource->setSet('foo', $set0));
+		$this->assertEquals([ '$set' => [ 'foo' => $set0 ]], $updates);
+		$this->assertEquals($resource, $resource->setSet('bar', $set1));
+		$this->assertEquals([ '$set' => [ 'bar' => $set1 ]], $updates);
+		$this->assertEquals($set1, $resource->getSet('bar'));
+	}
+
+	public function testSetSet_invalid_string_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setSet('foo', [ 'foo' => 'bar']);
+	}
+
+	public function testSetSet_invalid_index_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setSet('foo', [ 1 => 'foo', 0 => 'bar']);
+	}
+
+	public function testSetSet_invalid_duplicate_value() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setSet('foo', ['foo', 'foo', 'bar']);
+	}
+
+
+	public function testGetMap() {
+		$map0 = ['foo' => 'bar', 'baz' => 'quux'];
+		$map1 = ['bar' => 'baz', 'quux' => 'foo'];
+
+		$props = [
+			'foo' => $map0,
+			'bar' => $map1
+		];
+
+		$collection = $this->_mockCollection($props);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($map0, $resource->getMap('foo'));
+		$this->assertEquals($map1, $resource->getMap('bar'));
+	}
+
+	public function testSetMap() {
+		$map0 = ['foo' => 'bar', 'baz' => 'quux'];
+		$map1 = ['bar' => 'baz', 'quux' => 'foo'];
+
+		$props = [
+			'foo' => ''
+		];
+		$updates = [];
+
+		$collection = $this->_mockCollection($props, $updates);
+		$resource = $this->_mockResource($collection);
+
+		$this->assertEquals($resource, $resource->setMap('foo', $map0));
+		$this->assertEquals(['$set' => [ 'foo' => $map0 ]], $updates);
+		$this->assertEquals($resource, $resource->setMap('bar', $map1));
+		$this->assertEquals(['$set' => [ 'bar' => $map1 ]], $updates);
+		$this->assertEquals($map1, $resource->getMap('bar'));
+	}
+
+	public function testSetMap_invalid_no_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setMap('foo', ['bar', 'baz']);
+	}
+
+	public function testSetMap_invalid_index_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setMap('foo', [ 0 => 'foo', 1 => 'bar' ]);
+	}
+
+	public function testSetMap_invalid_mixed_key() {
+		$collection = $this->_mockCollection();
+		$resource = $this->_mockResource($collection);
+
+		$this->expectException(\ErrorException::class);
+
+		$resource->setMap('foo', [ 'bar' => 'baz', 1 => 'quux' ]);
+	}
+
+
 	public function testRemoveKey() {
 		$props = [
 			'foo' => 1,
