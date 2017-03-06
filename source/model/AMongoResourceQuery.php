@@ -73,9 +73,10 @@ implements IResourceQuery
 	private $_require = null;
 	private $_order = null;
 
-	private $_propMap = null;
-	private $_valMap = null;
-	private $_opMap = null;
+	private $_propertyMap;
+	private $_opMap;
+	private $_propertyTransformMap;
+	private $_valueTransformMap;
 
 	private $_query = null;
 	private $_queryMode = self::MODE_NONE;
@@ -93,9 +94,10 @@ implements IResourceQuery
 		$this->_require = $requirements;
 		$this->_order = $order;
 
-		$this->_propMap = null;
-		$this->_valMap = null;
-		$this->_opMap = null;
+		$this->_propertyMap = [];
+		$this->_opMap = [];
+		$this->_propertyTransformMap = [];
+		$this->_valueTransformMap = [];
 
 		$this->_query = null;
 		$this->_queryMode = self::MODE_NONE;
@@ -108,16 +110,39 @@ implements IResourceQuery
 	 * Returns the property map of the instance
 	 * @return array
 	 */
-	protected function _getPropertyMap() {
-		return $this->_propMap;
+	protected function _getPropertyMap() : array {
+		return $this->_propertyMap;
 	}
 
 	/**
 	 * Sets the property map of the instance
 	 * @param array $map
+	 * @returns AMongoResourceQuery
 	 */
-	protected function _setPropertyMap(array $map) {
-		$this->_propMap = $map;
+	protected function _setPropertyMap(array $map) : AMongoResourceQuery {
+		$this->_propertyMap = $map;
+
+		return $this;
+	}
+
+
+	/**
+	 * Returns the property transform map of the instance
+	 * @return array
+	 */
+	protected function _getPropertyTransformMap() : array {
+		return $this->_propertyTransformMap;
+	}
+
+	/**
+	 * Sets the property transform map of the instance
+	 * @param array $map
+	 * @return AMongoResourceQuery
+	 */
+	protected function _setPropertyTransformMap(array $map) : AMongoResourceQuery {
+		$this->_propertyTransformMap = $map;
+
+		return $this;
 	}
 
 
@@ -125,16 +150,19 @@ implements IResourceQuery
 	 * Returns the value map of the instance
 	 * @return array
 	 */
-	protected function _getValueMap() {
-		return $this->_valMap;
+	protected function _getValueTransformMap() : array {
+		return $this->_valueTransformMap;
 	}
 
 	/**
 	 * Sets the value map of the instance
 	 * @param array $map
+	 * @returns AMongoResourceQuery
 	 */
-	protected function _setValueMap(array $map) {
-		$this->_valMap = $map;
+	protected function _setValueTransformMap(array $map) : AMongoResourceQuery {
+		$this->_valueTransformMap = $map;
+
+		return $this;
 	}
 
 
@@ -142,7 +170,7 @@ implements IResourceQuery
 	 * Returns the operator map of the instance
 	 * @return array
 	 */
-	protected function _getOperatorMap() {
+	protected function _getOperatorMap() : array {
 		return $this->_opMap;
 	}
 
@@ -150,37 +178,55 @@ implements IResourceQuery
 	 * Sets the property map of the instance
 	 * @param array $map
 	 */
-	protected function _setOperatorMap(array $map) {
+	protected function _setOperatorMap(array $map) : AMongoResourceQuery {
 		$this->_opMap = $map;
+
+		return $this;
 	}
 
 
 	/**
-	 * Returns the property name of the property referenced by $queryProp
-	 * @param int $queryProp The query property
+	 * Returns the property name of the property referenced by $propId
+	 * @param int $propId The query property
 	 * @return string
-	 * @throws \ErrorException if $queryProp is not in the property map
+	 * @throws \ErrorException if $propId is not in the property map
 	 */
-	protected function _getPropertyNameOf($queryProp) {
-		$map = $this->_propMap;
+	private function _getPropertyNameOf(int $propId) : string {
+		$map = $this->_propertyMap;
 
-		if (!array_key_exists($queryProp, $map)) throw new \ErrorException();
+		if (!array_key_exists($propId, $map)) throw new \ErrorException();
 
-		return $map[$queryProp];
+		return $map[$propId];
+	}
+
+
+	/**
+	 * Returns transformed property of $prop and $val
+	 * @param int $propId The property identifier
+	 * @param string $prop The name of the property
+	 * @param mixed $val The property value
+	 * @return string
+	 */
+	private function _getQueryPropertyOf(int $propId, string $prop, $val) : string {
+		$map = $this->_propertyTransformMap;
+
+		if (!array_key_exists($propId, $map)) return $prop;
+
+		return call_user_func($map[$propId], $prop, $val);
 	}
 
 	/**
 	 * Returns transformed value of $val for the property referenced by $queryProp
-	 * @param int $queryProp The query property
+	 * @param int $propId The query property
 	 * @param mixed $val The property value
 	 * @return mixed
 	 */
-	protected function _getValueOf($queryProp, $val) {
-		$map = $this->_valMap;
+	private function _getQueryValueOf(int $propId, $val) {
+		$map = $this->_valueTransformMap;
 
-		if (!array_key_exists($queryProp, $map)) return $val;
+		if (!array_key_exists($propId, $map)) return $val;
 
-		return call_user_func($map[$queryProp], $val);
+		return call_user_func($map[$propId], $val, $propId);
 	}
 
 	/**
@@ -208,9 +254,15 @@ implements IResourceQuery
 	 */
 	protected function _resolveQuery($condition, $test, & $mode) {
 		$mode = self::MODE_MATCH;
+
+		$prop = $this->_getPropertyNameOf($condition);
 		$op = $this->_getPropertyOperatorOf($condition);
 
-		return [ $this->_getPropertyNameOf($condition) => [ self::_getQueryOperatorOf($op) => $this->_getValueOf($condition, $test) ]];
+		$queryProp = $this->_getQueryPropertyOf($condition, $prop, $test);
+		$queryOp = self::_getQueryOperatorOf($op);
+		$queryValue = $this->_getQueryValueOf($condition, $test);
+
+		return [ $queryProp => [ $queryOp => $queryValue ]];
 	}
 
 	/**
