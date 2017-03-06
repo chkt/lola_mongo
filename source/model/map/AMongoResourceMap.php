@@ -101,6 +101,58 @@ implements IResourceMap
 	}
 
 
+	public function getList(string $key) : array {
+		if (!$this->hasKey($key)) throw new \ErrorException();
+
+		return $this->_data[$key];
+	}
+
+	public function setList(string $key, array $list) : IResourceMap {
+		$test = array_values($list);
+
+		if ($test !== $list) throw new \ErrorException();
+
+		$this->_data[$key] = $list;
+		$this->_collection->updateOne($this->_filter, [ '$set' => [ $key => $list ]]);
+
+		return $this;
+	}
+
+
+	public function getSet(string $key) : array {
+		if (!$this->hasKey($key)) throw new \ErrorException();
+
+		return $this->_data[$key];
+	}
+
+	public function setSet(string $key, array $set) : IResourceMap {
+		$test = array_unique(array_values($set));
+
+		if ($test !== $set) throw new \ErrorException();
+
+		$this->_data[$key] = $set;
+		$this->_collection->updateOne($this->_filter, [ '$set' => [ $key => $set ]]);
+
+		return $this;
+	}
+
+
+	public function getMap(string $key) : array {
+		if (!$this->hasKey($key)) throw new \ErrorException();
+
+		return $this->_data[$key];
+	}
+
+	public function setMap(string $key, array $map) : IResourceMap {
+		if (count(array_filter(array_keys($map), 'is_string')) !== count($map)) throw new \ErrorException();
+
+		$this->_data[$key] = $map;
+		$this->_collection->updateOne($this->_filter, [ '$set' => [ $key => $map ]]);
+
+		return $this;
+	}
+
+
 	public function removeKey(string $key) : IResourceMap {
 		if (!$this->hasKey($key)) throw new \ErrorException();
 
