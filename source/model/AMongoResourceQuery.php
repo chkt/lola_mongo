@@ -28,6 +28,7 @@ implements IResourceQuery
 	const OP_GTE = 4;
 	const OP_LT = 5;
 	const OP_LTE = 6;
+	const OP_EXISTS = 7;
 
 
 	/**
@@ -43,7 +44,8 @@ implements IResourceQuery
 			self::OP_GT => '$gt',
 			self::OP_GTE => '$gte',
 			self::OP_LT => '$lt',
-			self::OP_LTE => '$lte'
+			self::OP_LTE => '$lte',
+			self::OP_EXISTS => '$exists'
 		];
 
 		if (!array_key_exists($op, $map)) throw new \ErrorException();
