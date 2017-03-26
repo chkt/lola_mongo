@@ -19,7 +19,7 @@
 
 	"require" : {
 		"mongodb/mongodb" : "1.1.*",
-		"chkt/lola" : "0.6.2-alpha"
+		"chkt/lola" : ">=0.6.2-alpha"
 	},
 
 	"autoload" : {
