@@ -4,16 +4,11 @@ namespace lola_mongo\model;
 
 use lola\model\IResourceQuery;
 
-use lola\type\StructuredData;
-
 
 
 abstract class AMongoResourceQuery
 implements IResourceQuery
 {
-
-	const VERSION = '0.2.4';
-
 
 	const MODE_NONE = 0;
 	const MODE_MATCH = 1;
@@ -277,26 +272,6 @@ implements IResourceQuery
 		return [ $this->_getPropertyNameOf($condition) => self::_getSortingDirectionOf($direction) ];
 	}
 
-	/**
-	 * Returns true if $property $operator $value is true, false otherwise
-	 * @param type $property The value of the property
-	 * @param type $operator The comparison operator representation
-	 * @param type $value The value of the test
-	 * @return bool
-	 * @throws \ErrorException if $operator is not a supported operator
-	 */
-	protected function _resolveMatch($property, $operator, $value) {
-		switch ($operator) {
-			case self::OP_EQ : return $property === $value;
-			case self::OP_NEQ : return $property !== $value;
-			case self::OP_GT : return $property > $value;
-			case self::OP_GTE : return $property >= $value;
-			case self::OP_LT : return $property < $value;
-			case self::OP_LTE : return $property <= $value;
-			default : throw new \ErrorException();
-		}
-	}
-
 
 	/**
 	 * Returns the query requirements
@@ -399,27 +374,5 @@ implements IResourceQuery
 		}
 
 		return $this->_sorting;
-	}
-
-
-	/**
-	 * Returns true if $data matches the query requirements, false otherwise
-	 * @param \lola\type\StructuredData $data The test data
-	 * @return bool
-	 */
-	public function match(StructuredData $data) {
-		$require = $this->getRequirements();
-
-		foreach ($require as $cond => $test) {
-			$prop = $this->_getPropertyNameOf($cond);
-			$op = $this->_getPropertyOperatorOf($cond);
-
-			if (
-				!$data->hasItem($prop) ||
-				!$this->_resolveMatch($data->useItem($prop), $op, $test)
-			) return false;
-		}
-
-		return true;
 	}
 }
