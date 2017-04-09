@@ -7,6 +7,7 @@ use lola_mongo\model\AMongoResource;
 
 use MongoDB\Collection;
 use lola\type\StructuredData;
+use lola\type\query\IDataQuery;
 use lola\model\IResource;
 use lola\model\IResourceQuery;
 use lola\model\ProxyResourceDriver;
@@ -154,12 +155,9 @@ implements IResourceCollection
 	}
 
 
-	public function getIndexOf(IResourceQuery $query) : int {
-		for ($i = $this->_length - 1; $i > -1; $i -= 1) {
-			$item = $this->useItem($i);
-			$data = $item->getData();
-
-			if ($query->match($data)) return $i;
+	public function getIndexOf(IDataQuery $query) : int {
+		for ($i = 0, $l = $this->_length; $i < $l; $i += 1) {
+			if ($query->match($this->_data[$i])) return $i;
 		}
 
 		return -1;
